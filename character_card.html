@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Character Card</title>
+  <style>
+    body {
+      position: relative; /* for absolute logo */
+      background: #121212;
+      color: #EEE;
+      font-family: sans-serif;
+      margin: 0; padding: 0;
+      display: flex; flex-direction: column;
+      align-items: center; min-height: 100vh;
+    }
+    #logo {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      width: 160px;
+      height: auto;
+    }
+    .navigator {
+      display: flex; align-items: center; gap: 16px;
+      margin: 16px 0 8px;
+    }
+    .nav-btn {
+      flex-shrink: 0;
+      font-size: 32px; color: #EEE; text-decoration: none;
+      background: #1e1e1e; border: 2px solid #333;
+      border-radius: 8px; width: 48px; height: 48px;
+      display: flex; justify-content: center; align-items: center;
+    }
+    .card {
+      flex-shrink: 0;
+      display: flex; width: 900px;
+      min-height: 550px;
+      background: #1e1e1e; border: 2px solid #333;
+      border-radius: 8px; padding: 16px; gap: 16px;
+      box-sizing: border-box;
+    }
+    .side {
+      flex: 1; display: flex; flex-direction: column; gap: 12px;
+    }
+    .main {
+      flex: 2; display: flex; flex-direction: column; gap: 12px;
+    }
+    .section {
+      border: 1px solid #333; border-radius: 6px;
+      background: #1e1e1e; padding: 12px; box-sizing: border-box;
+    }
+    .section.rank {
+      border: none; background: transparent; padding: 0; margin-top: 8px;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .level-box {
+      background: #2d2d2d; padding: 6px 10px;
+      border-radius: 4px; font-size: 16px; letter-spacing: 1px;
+    }
+    .name { font-size: 24px; font-weight: bold; }
+    .portrait {
+      text-align: center; padding: 8px 0;
+    }
+    .portrait img {
+      width: 100%; border-radius: 4px;
+    }
+    .rank h2 {
+      text-align: center;
+      margin: 0 0 4px; font-size: 18px; letter-spacing: 1px;
+    }
+    .rank-text {
+      display: block; text-align: center;
+      font-size: 16px; color: #EEE;
+    }
+    .stats h2, .inventory h2, .badges h2 {
+      text-align: center;
+      margin: 0 0 8px; font-size: 18px; letter-spacing: 1px;
+    }
+    .stats ul {
+      list-style: none; padding: 0; margin: 0;
+    }
+    .stats li {
+      display: flex; justify-content: space-between;
+      padding: 4px 0; font-size: 16px;
+    }
+    .inventory .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 8px; height: 100%;
+    }
+    .badges .grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: 1fr;
+      gap: 8px;
+    }
+    .grid .item {
+      background: #2d2d2d; border-radius: 6px;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      aspect-ratio: 1/1; padding: 4px; box-sizing: border-box;
+    }
+    .grid .item img {
+      max-width: 60%; max-height: 60%;
+    }
+    .grid .item .item-label {
+      margin-top: 4px; font-size: 12px;
+      text-transform: capitalize; text-align: center; color: #DDD;
+    }
+    .footer {
+      margin: 32px 0 16px;
+    }
+    .launch-btn {
+      padding: 8px 16px; background: #2d2d2d;
+      color: #EEE; text-decoration: none;
+      border: 2px solid #333; border-radius: 6px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Logo in top-left -->
+  <img id="logo" src="assets/logo.png" alt="Logo">
+
+  <div class="navigator">
+    <a id="prev-btn" class="nav-btn" href="#">&larr;</a>
+    <div class="card">
+      <div class="side">
+        <div class="section header">
+          <div class="level-box">
+            LEVEL <span id="level">0</span>
+          </div>
+          <div class="name" id="char-name">Loading…</div>
+        </div>
+        <div class="section portrait">
+          <img id="portrait-img" src="" alt="Portrait">
+        </div>
+        <div class="section rank">
+          <h2>RANK</h2>
+          <div id="rank-label" class="rank-text"></div>
+        </div>
+      </div>
+      <div class="main">
+        <div class="section stats">
+          <h2>STATS</h2>
+          <ul id="stats-list"></ul>
+        </div>
+        <div class="section inventory">
+          <h2>INVENTORY</h2>
+          <div id="inventory-grid" class="grid"></div>
+        </div>
+        <div class="section badges">
+          <h2>BADGES</h2>
+          <div id="badges-grid" class="grid"></div>
+        </div>
+      </div>
+    </div>
+    <a id="next-btn" class="nav-btn" href="#">&rarr;</a>
+  </div>
+
+  <div class="footer">
+    <a href="launch.html" class="launch-btn">Back to Launch</a>
+  </div>
+
+  <script>
+    const params        = new URLSearchParams(location.search);
+    const student       = params.get('student') || '';
+    const sheetName     = params.get('sheet')   || 'Odell';
+    const spreadsheetId = '1VaO1MjgmnYKxgHkAlKxZQ1LLzgl0CAUVXTjgxUGDkRE';
+    const sheetURL      =
+      `https://docs.google.com/spreadsheets/d/${spreadsheetId}` +
+      `/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(txt => JSON.parse(txt.substr(txt.indexOf('(')+1).slice(0,-2)))
+      .then(json => {
+        const rawHeaders = json.table.cols.map(c => c.label.trim());
+        const headers    = rawHeaders.map(h => h.toLowerCase());
+        const rows       = json.table.rows.map(r => r.c.map(c => c && c.v));
+
+        const nameIdx     = headers.indexOf('studentname');
+        const levelIdx    = headers.indexOf('level');
+        const portraitIdx = headers.indexOf('portrait');
+        const rankIdx     = headers.indexOf('rank');
+        const statKeys    = ['strength','agility','intelligence','defense'];
+        const statIdx     = statKeys.map(k => headers.indexOf(k));
+
+        const names  = rows.map(r => r[nameIdx]);
+        const idx    = names.indexOf(student) >= 0 ? names.indexOf(student) : 0;
+        const row    = rows[idx] || [];
+
+        // Header
+        document.getElementById('char-name').innerText = row[nameIdx]  || 'Unknown';
+        document.getElementById('level').innerText     = row[levelIdx] || 0;
+        // Rank
+        document.getElementById('rank-label').innerText = row[rankIdx]  || '';
+
+        // Stats
+        document.getElementById('stats-list').innerHTML =
+          statKeys.map((k,i) => {
+            const v = row[statIdx[i]] || 0;
+            return `<li><span>${k.charAt(0).toUpperCase()+k.slice(1)}</span><span>${v}</span></li>`;
+          }).join('');
+
+        // Portrait
+        const pFile = row[portraitIdx];
+        if (pFile) {
+          document.getElementById('portrait-img').src =
+            pFile.startsWith('http') ? pFile : `assets/${pFile}`;
+        }
+
+        // Inventory
+        const inventoryItems = rawHeaders
+          .map((h,i) => ({header:h, idx:i}))
+          .filter(x => x.header.toLowerCase().startsWith('has') && row[x.idx])
+          .map(x => ({
+            file:  x.header.slice(3).toLowerCase() + '.png',
+            label: x.header.slice(3)
+          }));
+
+        const invGrid = document.getElementById('inventory-grid');
+        invGrid.innerHTML = '';
+        for (let i = 0; i < 18; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'item';
+          if (inventoryItems[i]) {
+            const img = document.createElement('img');
+            img.src = `assets/${inventoryItems[i].file}`;
+            img.alt = inventoryItems[i].label;
+            cell.appendChild(img);
+            const lbl = document.createElement('div');
+            lbl.className = 'item-label';
+            lbl.textContent = inventoryItems[i].label;
+            cell.appendChild(lbl);
+          }
+          invGrid.appendChild(cell);
+        }
+
+        // Badges
+        const badgeItems = rawHeaders
+          .map((h,i) => ({header:h, idx:i}))
+          .filter(x => x.header.toLowerCase().startsWith('badge') && row[x.idx])
+          .map(x => ({
+            file:  x.header.slice(5).toLowerCase() + '.png',
+            label: x.header.slice(5)
+          }));
+
+        const badgeGrid = document.getElementById('badges-grid');
+        badgeGrid.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+          const cell = document.createElement('div');
+          cell.className = 'item';
+          if (badgeItems[i]) {
+            const img = document.createElement('img');
+            img.src = `assets/${badgeItems[i].file}`;
+            img.alt = badgeItems[i].label;
+            cell.appendChild(img);
+            const lbl = document.createElement('div');
+            lbl.className = 'item-label';
+            lbl.textContent = badgeItems[i].label;
+            cell.appendChild(lbl);
+          }
+          badgeGrid.appendChild(cell);
+        }
+
+        // Prev / Next
+        const prev = names[(idx - 1 + names.length) % names.length];
+        const next = names[(idx + 1) % names.length];
+        document.getElementById('prev-btn').href =
+          `character_card.html?student=${encodeURIComponent(prev)}` +
+          `&sheet=${encodeURIComponent(sheetName)}`;
+        document.getElementById('next-btn').href =
+          `character_card.html?student=${encodeURIComponent(next)}` +
+          `&sheet=${encodeURIComponent(sheetName)}`;
+      })
+      .catch(err => console.error('Fetch error:', err));
+  </script>
+
+</body>
+</html>

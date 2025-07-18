@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Players Launch & Leaderboard</title>
+  <style>
+    body {
+      position: relative; /* for absolute logo */
+      background: #121212;
+      color: #EEE;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #logo {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      width: 80px;
+      height: auto;
+    }
+    h1, h2 {
+      text-align: center;
+      margin: 16px 0;
+    }
+    .launch-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 120px);
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .launch-item {
+      text-align: center;
+    }
+    .launch-item img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: #1e1e1e;
+    }
+    .launch-item .name-link {
+      display: block;
+      margin-top: 8px;
+      color: #EEE;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .launch-item .player-total {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #CCC;
+    }
+    .footer {
+      margin: 32px 0 0;
+    }
+    .switch-btn {
+      padding: 8px 16px;
+      background: #2d2d2d;
+      color: #EEE;
+      border: 2px solid #333;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Logo in top-left -->
+  <img id="logo" src="assets/logo.png" alt="Logo">
+
+  <h1 id="page-title">Players</h1>
+
+  <h2>Leaderboard</h2>
+  <div id="leaderboard-grid" class="launch-grid"></div>
+
+  <h2>Other players in ABC order</h2>
+  <div id="all-grid" class="launch-grid"></div>
+
+  <div class="footer">
+    <button id="switch-btn" class="switch-btn">Switch Classes</button>
+  </div>
+
+  <script>
+    const params        = new URLSearchParams(location.search);
+    let sheetName       = params.get('sheet') || 'Odell';
+    const spreadsheetId = '1VaO1MjgmnYKxgHkAlKxZQ1LLzgl0CAUVXTjgxUGDkRE';
+
+    const pageTitle     = document.getElementById('page-title');
+    const switchBtn     = document.getElementById('switch-btn');
+
+    switchBtn.addEventListener('click', () => {
+      sheetName = sheetName === 'Odell' ? 'Aparicio' : 'Odell';
+      history.replaceState(null, '', '?sheet=' + encodeURIComponent(sheetName));
+      loadAndRender();
+    });
+
+    loadAndRender();
+
+    function loadAndRender() {
+      // Update heading
+      pageTitle.textContent = `${sheetName} players`;
+
+      const sheetURL =
+        `https://docs.google.com/spreadsheets/d/${spreadsheetId}` +
+        `/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=out:json`;
+
+      fetch(sheetURL)
+        .then(r => r.text())
+        .then(txt => JSON.parse(txt.substr(txt.indexOf('(')+1).slice(0,-2)))
+        .then(json => {
+          const headers = json.table.cols.map(c => c.label.trim().toLowerCase());
+          const rows    = json.table.rows.map(r => r.c.map(c => c && c.v));
+
+          const nameIdx         = headers.indexOf('studentname');
+          const portraitIdx     = headers.indexOf('portrait');
+          const strengthIdx     = headers.indexOf('strength');
+          const agilityIdx      = headers.indexOf('agility');
+          const intelligenceIdx = headers.indexOf('intelligence');
+          const defenseIdx      = headers.indexOf('defense');
+
+          const players = rows.map(r => {
+            const total =
+              (Number(r[strengthIdx])     || 0) +
+              (Number(r[agilityIdx])      || 0) +
+              (Number(r[intelligenceIdx]) || 0) +
+              (Number(r[defenseIdx])      || 0);
+            return {
+              name:     r[nameIdx]     || 'Unknown',
+              portrait: r[portraitIdx] || '',
+              total
+            };
+          });
+
+          const sorted = [...players].sort((a,b) => b.total - a.total);
+          const top10   = sorted.slice(0,10);
+          const topSet  = new Set(top10.map(p => p.name));
+
+          const others = players
+            .filter(p => !topSet.has(p.name))
+            .sort((a,b) => a.name.localeCompare(b.name));
+
+          renderGrid('leaderboard-grid', top10, true);
+          renderGrid('all-grid', others, false);
+        })
+        .catch(err => console.error('Error loading sheet:', err));
+    }
+
+    function renderGrid(containerId, list, showTotal) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      list.forEach(p => {
+        const link = `character_card.html?student=${encodeURIComponent(p.name)}` +
+                     `&sheet=${encodeURIComponent(sheetName)}`;
+        const div  = document.createElement('div');
+        div.className = 'launch-item';
+
+        const aImg = document.createElement('a');
+        aImg.href = link;
+        const img  = document.createElement('img');
+        img.src   = p.portrait.startsWith('http') ? p.portrait : `assets/${p.portrait}`;
+        img.alt   = p.name;
+        aImg.appendChild(img);
+
+        const aName = document.createElement('a');
+        aName.href        = link;
+        aName.className   = 'name-link';
+        aName.textContent = p.name;
+
+        div.appendChild(aImg);
+        div.appendChild(aName);
+
+        if (showTotal) {
+          const t = document.createElement('div');
+          t.className   = 'player-total';
+          t.textContent = `Total: ${p.total}`;
+          div.appendChild(t);
+        }
+
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
