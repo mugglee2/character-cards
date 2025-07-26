@@ -41,9 +41,7 @@
       max-width: 1200px;
       margin: 0 auto 16px;
     }
-    #logo {
-      height: 100px;
-    }
+    #logo { height: 100px; }
     #classTitle {
       font-size: 28px;
       font-weight: 700;
@@ -95,19 +93,11 @@
       display: block;
       margin: 0 auto 6px;
     }
-    .tile-name {
-      font-size: 13px;
-      margin-bottom: 4px;
-      color: #fff;
-    }
-    .tile-points {
-      font-size: 12px;
-      color: #aaa;
-    }
+    .tile-name      { font-size: 13px; margin-bottom: 4px; color: #fff; }
+    .tile-points    { font-size: 12px; color: #aaa; }
     .rank-badge {
       position: absolute;
-      top: 6px;
-      left: 6px;
+      top: 6px; left: 6px;
       background: #3b82f6;
       color: #fff;
       padding: 2px 6px;
@@ -119,11 +109,7 @@
 <body>
 
   <!-- Settings button pinned top-right -->
-  <button id="settingsBtn"
-          onclick="if (prompt('Password?') === '8445') {
-            window.location.href = 
-              'https://script.google.com/macros/s/AKfycbxjb514CMTbPtOJUEpmgANIXoYrTH8i9Qy3rIEao5zfE-SCTD4uuo5KfFbw2npYKJ1gIg/exec?page=portal&class=Odell';
-          }">
+  <button id="settingsBtn">
     <img src="assets/settings.png" alt="Settings">
   </button>
 
@@ -140,32 +126,37 @@
   <div id="otherGrid"></div>
 
   <script>
+    // CONFIG
     const SPREADSHEET_ID = '1VaO1MjgmnYKxgHkAlKxZQ1LLzgl0CAUVXTjgxUGDkRE';
     const DEFAULT_SHEET  = 'Odell';
     const ASSETS_BASE    = 'https://mugglee2.github.io/character-cards/assets';
 
-    const params   = new URLSearchParams(location.search);
-    let currentSheet = params.get('sheet') || DEFAULT_SHEET;
-    const classNames = ['Odell','Aparicio'];
+    // State
+    const params       = new URLSearchParams(location.search);
+    let currentSheet   = params.get('sheet') || DEFAULT_SHEET;
+    const classNames   = ['Odell','Aparicio'];
 
+    // Utility: toggle class view
     function toggleClass(){
       const idx = classNames.indexOf(currentSheet);
-      currentSheet = classNames[(idx+1)%classNames.length];
+      currentSheet = classNames[(idx+1) % classNames.length];
       const url = new URL(location.href);
       url.searchParams.set('sheet', currentSheet);
       location.href = url;
     }
+
+    // Initialize header & switch
     document.getElementById('switchBtn').addEventListener('click', toggleClass);
     document.getElementById('classTitle').textContent = `${currentSheet} players`;
 
-    const url = 
-      `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}` +
-      `/gviz/tq?sheet=${encodeURIComponent(currentSheet)}&tqx=out:json`;
+    // Fetch sheet data
+    const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}`
+              + `/gviz/tq?sheet=${encodeURIComponent(currentSheet)}&tqx=out:json`;
 
     fetch(url)
-      .then(r=>r.text())
-      .then(txt=>{
-        const json = JSON.parse(txt.slice(txt.indexOf('(')+1, -2));
+      .then(r => r.text())
+      .then(txt => {
+        const json    = JSON.parse(txt.slice(txt.indexOf('(') + 1, -2));
         const headers = json.table.cols.map(c=>c.label.trim().toLowerCase());
         const rows    = json.table.rows.map(r=>r.c.map(c=>c && c.v));
 
@@ -175,18 +166,19 @@
         const iLvl  = headers.indexOf('level');
 
         const students = rows
-          .filter(r=>r[iName])
-          .map(r=>({
+          .filter(r => r[iName])
+          .map(r => ({
             name: r[iName],
-            pic:  r[iPic] && !String(r[iPic]).startsWith('http') 
-                  ? `assets/${r[iPic]}` 
-                  : (r[iPic]||`${ASSETS_BASE}/placeholder.png`),
-            xp:   Number(r[iXP])||0,
-            lvl:  Number(r[iLvl])||1
+            pic:  r[iPic] && !String(r[iPic]).startsWith('http')
+                  ? `assets/${r[iPic]}`
+                  : (r[iPic] || `${ASSETS_BASE}/placeholder.png`),
+            xp:   Number(r[iXP])  || 0,
+            lvl:  Number(r[iLvl]) || 1
           }));
 
-        const sorted = [...students].sort((a,b)=>b.xp - a.xp);
-        const top10  = sorted.slice(0,10);
+        // Top 10
+        const sorted   = [...students].sort((a,b)=>b.xp - a.xp);
+        const top10    = sorted.slice(0,10);
         const topNames = new Set(top10.map(s=>s.name));
 
         renderGrid(top10, document.getElementById('leaderGrid'), true);
@@ -196,15 +188,16 @@
         renderGrid(others, document.getElementById('otherGrid'), false);
       });
 
+    // Render tiles
     function renderGrid(list, container, showPoints){
       container.innerHTML = '';
-      list.forEach((s,idx)=>{
+      list.forEach((s,idx) => {
         const tile = document.createElement('div');
         tile.className = 'tile';
         tile.innerHTML = `
-          <img src="${s.pic}">
+          <img src="${s.pic}" alt="${s.name}">
           <div class="tile-name">${s.name}</div>
-          ${showPoints?`<div class="tile-points">${s.xp} XP</div>`:''}
+          ${showPoints ? `<div class="tile-points">${s.xp} XP</div>` : ''}
         `;
         if(showPoints){
           const badge = document.createElement('div');
@@ -220,6 +213,18 @@
         container.appendChild(tile);
       });
     }
+
+    // SETTINGS BTN handler: redirect to Apps Script portal
+    document.getElementById('settingsBtn')
+      .addEventListener('click', () => {
+        const pw = prompt('Password?');
+        if (pw === '8445') {
+          window.location.href = 
+            'https://script.google.com/macros/s/' +
+            'AKfycbxjb514CMTbPtOJUEpmgANIXoYrTH8i9Qy3rIEao5zfE-' +
+            'SCTD4uuo5KfFbw2npYKJ1gIg/exec?page=portal&class=Odell';
+        }
+      });
   </script>
 </body>
 </html>
