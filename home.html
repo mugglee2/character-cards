@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quest Command Center</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #0a0e27;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(62, 38, 102, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, rgba(38, 51, 102, 0.4) 0%, transparent 40%),
+        linear-gradient(180deg, #0a0e27 0%, #1a1f3a 100%);
+      min-height: 100vh;
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .logo {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 20px;
+      filter: drop-shadow(0 4px 20px rgba(139, 146, 217, 0.3));
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, #fff 0%, #8b92d9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #8b92d9;
+      font-size: 18px;
+      letter-spacing: 1px;
+    }
+
+    /* Navigation Grid */
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .nav-card {
+      background: linear-gradient(135deg, rgba(42, 46, 74, 0.6), rgba(26, 31, 58, 0.6));
+      border: 2px solid rgba(139, 146, 217, 0.3);
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(139, 146, 217, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .nav-card:hover::before {
+      left: 100%;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(139, 146, 217, 0.6);
+      box-shadow: 0 10px 30px rgba(139, 146, 217, 0.3);
+    }
+
+    .nav-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .nav-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-desc {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.4;
+    }
+
+    /* Special Cards */
+    .nav-card.leaderboard {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+      border-color: rgba(255, 215, 0, 0.3);
+    }
+
+    .nav-card.leaderboard:hover {
+      border-color: rgba(255, 215, 0, 0.6);
+      box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+    }
+
+    .nav-card.store {
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.05));
+      border-color: rgba(79, 172, 254, 0.3);
+    }
+
+    .nav-card.store:hover {
+      border-color: rgba(79, 172, 254, 0.6);
+      box-shadow: 0 10px 30px rgba(79, 172, 254, 0.2);
+    }
+
+    .nav-card.behavior {
+      background: linear-gradient(135deg, rgba(248, 87, 166, 0.1), rgba(255, 88, 88, 0.05));
+      border-color: rgba(248, 87, 166, 0.3);
+    }
+
+    .nav-card.behavior:hover {
+      border-color: rgba(248, 87, 166, 0.6);
+      box-shadow: 0 10px 30px rgba(248, 87, 166, 0.2);
+    }
+
+    .nav-card.bathroom {
+      background: linear-gradient(135deg, rgba(86, 204, 242, 0.1), rgba(47, 128, 237, 0.05));
+      border-color: rgba(86, 204, 242, 0.3);
+    }
+
+    .nav-card.bathroom:hover {
+      border-color: rgba(86, 204, 242, 0.6);
+      box-shadow: 0 10px 30px rgba(86, 204, 242, 0.2);
+    }
+
+    /* Teacher Portal - Subtle */
+    .teacher-access {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .teacher-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: rgba(42, 46, 74, 0.3);
+      border: 1px solid rgba(139, 146, 217, 0.2);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-decoration: none;
+    }
+
+    .teacher-btn:hover {
+      background: rgba(42, 46, 74, 0.5);
+      color: rgba(255,255,255,0.9);
+      border-color: rgba(139, 146, 217, 0.4);
+    }
+
+    .teacher-icon {
+      width: 20px;
+      height: 20px;
+      opacity: 0.6;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 32px; }
+      .nav-grid { grid-template-columns: 1fr; }
+      .nav-icon { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="assets/logo.png" alt="Quest Logo" class="logo">
+      <h1>Quest Command</h1>
+      <p class="subtitle">Choose Your Adventure</p>
+    </div>
+
+    <div class="nav-grid">
+      <a href="launch.html" class="nav-card leaderboard">
+        <span class="nav-icon">🏆</span>
+        <div class="nav-title">Leaderboard</div>
+        <div class="nav-desc">View class rankings and champions</div>
+      </a>
+
+      <a href="#" class="nav-card store" onclick="goToTool('store')">
+        <span class="nav-icon">⚔️</span>
+        <div class="nav-title">Quest Store</div>
+        <div class="nav-desc">Spend gold on epic rewards</div>
+      </a>
+
+      <a href="#" class="nav-card behavior" onclick="goToTool('behavior_chart')">
+        <span class="nav-icon">📊</span>
+        <div class="nav-title">Battle Status</div>
+        <div class="nav-desc">Track HP and behavior progress</div>
+      </a>
+
+      <a href="#" class="nav-card bathroom" onclick="goToTool('bathroom')">
+        <span class="nav-icon">⏱️</span>
+        <div class="nav-title">Quest Timer</div>
+        <div class="nav-desc">Bathroom pass system</div>
+      </a>
+    </div>
+
+    <div class="teacher-access">
+      <button class="teacher-btn" onclick="accessTeacherPortal()">
+        <img src="assets/settings.png" alt="Settings" class="teacher-icon">
+        <span>Teacher Access</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxjb514CMTbPtOJUEpmgANIXoYrTH8i9Qy3rIEao5zfE-SCTD4uuo5KfFbw2npYKJ1gIg/exec';
+    const TEACHER_PASSWORD = '8445';
+    
+    // Get current class from localStorage or default
+    const currentClass = localStorage.getItem('currentClass') || 'Odell';
+
+    function goToTool(page) {
+      window.location.href = `${APPS_SCRIPT_URL}?page=${page}&class=${currentClass}`;
+    }
+
+    function accessTeacherPortal() {
+      const password = prompt('Enter teacher password:');
+      if (password === TEACHER_PASSWORD) {
+        window.location.href = `${APPS_SCRIPT_URL}?page=portal&class=${currentClass}`;
+      } else if (password) {
+        alert('Incorrect password');
+      }
+    }
+  </script>
+</body>
+</html>
